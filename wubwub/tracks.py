@@ -18,6 +18,8 @@ import os
 import pprint
 import warnings
 
+import random
+
 import numpy as np
 import pydub
 from sortedcontainers import SortedDict
@@ -27,6 +29,9 @@ from wubwub.errors import WubWubError, WubWubWarning
 from wubwub.notes import ArpChord, Chord, Note, arpeggiate, _notetypes_
 from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
+
+
+print(random.randint(0,9))
 
 class SliceableDict:
     '''Helper class to implement the "note slice" feature of Tracks.'''
@@ -347,6 +352,7 @@ class Track(metaclass=ABCMeta):
         return build
 
     def play(self, start=1, end=None, overhang=0, overhang_type='beats'):
+        print("sdfd")
         b = (1/self.get_bpm()) * MINUTE
         start = (start-1) * b
         if end is not None:
@@ -386,6 +392,7 @@ class SamplerLikeTrack(Track):
         lengths = self._convert_select_arg(lengths, length_select)
         volumes = self._convert_select_arg(volumes, volume_select)
 
+
         d = {b : Note(next(pitches), next(lengths), next(volumes))
              for b in beats}
 
@@ -393,7 +400,7 @@ class SamplerLikeTrack(Track):
 
     def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, pitch_select='cycle',
-                         length_select='cycle', volume_select='cycle', merge=False):
+                         length_select='cycle', volume_select='cycle', merge=False, attack=None, volume=None):
 
         freq = Fraction(freq).limit_denominator()
 
@@ -405,9 +412,18 @@ class SamplerLikeTrack(Track):
         if end is None:
             end = self.get_beats() + 1
         d = {}
+
         while b < end:
             pos = b.numerator / b.denominator
-            d[pos] = Note(next(pitches), next(lengths), next(volumes))
+            attackVal = attack
+            volumeVal = 1
+            if attack != None:
+                attackVal = attack + random.randint(0, 10)
+
+            if volume != None:
+                volumeVal = volume + random.randint(0, 100) / 10
+
+            d[pos] = Note(next(pitches), next(lengths), volumeVal, attack=attackVal)
             b += freq
 
         self.add_fromdict(d, merge=merge)
@@ -517,6 +533,8 @@ class Sampler(SingleSampleTrack, SamplerLikeTrack):
                                           position=position,
                                           duration=duration,
                                           basepitch=basepitch)
+
+                print("hereeee")
             elif isinstance(value, Chord):
                 chord = value
                 for note in chord.notes:

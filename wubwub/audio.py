@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python100
 # -*- coding: utf-8 -*-
 """
 This module provides some functions for manipulating pydub AudioSegments.
@@ -55,9 +55,21 @@ def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
         sample = shift_pitch(sample, pitch)
     sound = sample
     sound += note.volume
+    print('note vol')
+    print(note.volume)
     sound = sound[:duration]
     sound = sound.fade_out(fade)
+
+    print(note.attack)
+    if note.attack != None:
+        print("attacK")
+        print(note.attack)
+        sound = sound.fade_in(note.attack)
+    else:
+        sound = sound.fade_in(10)
+
     audio = audio.overlay(sound, position=position)
+    # audio = audio.apply_gain(10)
     return audio
 
 def add_effects(sound, fx):
