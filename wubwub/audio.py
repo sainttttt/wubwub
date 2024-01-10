@@ -55,15 +55,10 @@ def add_note_to_audio(note, audio, sample, position, duration, basepitch=None,
         sample = shift_pitch(sample, pitch)
     sound = sample
     sound += note.volume
-    print('note vol')
-    print(note.volume)
     sound = sound[:duration]
     sound = sound.fade_out(fade)
 
-    print(note.attack)
     if note.attack != None:
-        print("attacK")
-        print(note.attack)
         sound = sound.fade_in(note.attack)
     else:
         sound = sound.fade_in(10)

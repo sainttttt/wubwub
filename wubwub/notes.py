@@ -30,9 +30,9 @@ from wubwub.resources import random_choice_generator
 
 class Note(object):
     '''Class to represent an atomic MIDI-like note in wubwub.'''
-    __slots__ = ('pitch', 'length', 'volume', 'attack', 'decay')
+    __slots__ = ('pitch', 'length', 'volume', 'attack', 'decay', 'skew')
 
-    def __init__(self, pitch=0, length=1, volume=0, attack=None, decay=None):
+    def __init__(self, pitch=0, length=1, volume=0, attack=None, decay=None, skew=None):
         '''
         Initialize the note.
 
@@ -59,6 +59,7 @@ class Note(object):
         object.__setattr__(self, "volume", volume)
         object.__setattr__(self, "attack", attack)
         object.__setattr__(self, "decay", decay)
+        object.__setattr__(self, "skew", skew)
 
     def __setattr__(self, *args):
         '''Lock setting of attributes for Notes.'''
@@ -72,7 +73,7 @@ class Note(object):
 
     def __repr__(self):
         '''The string representation of the Note.'''
-        attribs = ('pitch', 'length', 'volume')
+        attribs = ('pitch', 'length', 'volume', 'attack', 'skew')
         output = ', '.join([a + '=' + str(getattr(self, a)) for a in attribs])
         return f'Note({output})'
 

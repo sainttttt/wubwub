@@ -31,7 +31,6 @@ from wubwub.plots import trackplot, pianoroll
 from wubwub.resources import random_choice_generator, MINUTE, SECOND
 
 
-print(random.randint(0,9))
 
 class SliceableDict:
     '''Helper class to implement the "note slice" feature of Tracks.'''
@@ -352,7 +351,6 @@ class Track(metaclass=ABCMeta):
         return build
 
     def play(self, start=1, end=None, overhang=0, overhang_type='beats'):
-        print("sdfd")
         b = (1/self.get_bpm()) * MINUTE
         start = (start-1) * b
         if end is not None:
@@ -398,11 +396,26 @@ class SamplerLikeTrack(Track):
 
         self.add_fromdict(d, merge=merge)
 
+    def _get_skew_amount(self):
+        skew_amount = 0
+        if self.skew:
+            if not self.skew_dir or self.skew_dir == "neg" :
+                skew_amount = random.randint(-1 * self.skew, 0)
+            elif self.skew_dir == "pos":
+                skew_amount = random.randint(0, self.skew)
+            elif self.skew_dir == "both":
+                skew_amount = random.randint(-1 * self.skew, self.skew)
+
+        return skew_amount
+
+
     def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, pitch_select='cycle',
-                         length_select='cycle', volume_select='cycle', merge=False, attack=None, volume=None):
+                         length_select='cycle', volume_select='cycle', merge=False,
+                         attack=None, volume=None, attackRange=10, volumeRange=10):
 
         freq = Fraction(freq).limit_denominator()
+
 
         pitches = self._convert_select_arg(pitches, pitch_select)
         lengths = self._convert_select_arg(lengths, length_select)
@@ -418,12 +431,16 @@ class SamplerLikeTrack(Track):
             attackVal = attack
             volumeVal = 1
             if attack != None:
-                attackVal = attack + random.randint(0, 10)
+                attackMin = attack - attackRange
+                if attackMin < 0:
+                    attackMin = 0
+
+                attackVal = attack + random.randint(attackMin, attack + attackRange)
 
             if volume != None:
-                volumeVal = volume + random.randint(0, 100) / 10
+                volumeVal = volume + random.randint(-1 * volumeRange, volumeRange) / 10
 
-            d[pos] = Note(next(pitches), next(lengths), volumeVal, attack=attackVal)
+            d[pos] = Note(next(pitches), next(lengths), volumeVal, attack=attackVal, skew=self._get_skew_amount())
             b += freq
 
         self.add_fromdict(d, merge=merge)
@@ -502,16 +519,19 @@ class MultiSampleTrack(Track):
         self.samples = {}
 
 class Sampler(SingleSampleTrack, SamplerLikeTrack):
-    def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True):
+    def __init__(self, name, sample, sequencer, basepitch='C4', overlap=True, skew=None, skew_dir=None):
         super().__init__(name=name, sample=sample, sequencer=sequencer,
                          basepitch=basepitch, overlap=overlap)
         self.overlap = overlap
         self.basepitch = basepitch
+        self.skew = skew
+        self.skew_dir = skew_dir
 
     def __repr__(self):
         return f'Sampler(name="{self.name}")'
 
     def build(self, overhang=0, overhang_type='beats'):
+        overhang = 2
         b = (1/self.get_bpm()) * MINUTE
         overhang = _overhang_to_milli(overhang, overhang_type, b)
         tracklength = self.get_beats() * b + overhang
@@ -520,9 +540,12 @@ class Sampler(SingleSampleTrack, SamplerLikeTrack):
         basepitch = self.basepitch
         next_position = np.inf
         for beat, value in sorted(self.notedict.items(), reverse=True):
+
             position = (beat-1) * b
+
             if isinstance(value, Note):
                 note = value
+                position += note.skew
                 duration = note.length * b
                 if (position + duration) > next_position and not self.overlap:
                     duration = next_position - position
@@ -534,7 +557,6 @@ class Sampler(SingleSampleTrack, SamplerLikeTrack):
                                           duration=duration,
                                           basepitch=basepitch)
 
-                print("hereeee")
             elif isinstance(value, Chord):
                 chord = value
                 for note in chord.notes:

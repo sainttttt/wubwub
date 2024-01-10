@@ -173,7 +173,7 @@ class Sequencer:
         """Returns a list of the names of each Track currenlty part of this Sequencer."""
         return [t.name for t in self._tracks]
 
-    def add_sampler(self, sample, name=None, overlap=False, basepitch='C4'):
+    def add_sampler(self, sample, skew=None, skew_dir=None, name=None, overlap=False, basepitch='C4'):
         """
         Create a new `wubwub.tracks.Sampler` Track and add to the Sequencer.
         Parameters here are initialization values for `wubwub.tracks.Sampler`;
@@ -215,8 +215,9 @@ class Sequencer:
         """
         if name is None:
             name = unique_name('Track', self.tracknames())
+        print(f"{skew=}")
         new = Sampler(name=name, sample=sample, overlap=overlap,
-                      basepitch=basepitch, sequencer=self)
+                      basepitch=basepitch, sequencer=self, skew=skew, skew_dir=skew_dir)
         return new
 
     def add_arpeggiator(self, sample, name=None, freq=0.5, method='up',
@@ -553,6 +554,7 @@ class Sequencer:
         tracklength = self.beats * b + seq_oh
         audio = pydub.AudioSegment.silent(duration=tracklength)
         for track in self.tracks():
+            print(track.notedict)
             audio = audio.overlay(track.build(overhang, overhang_type))
         return self.postprocess(audio)
 
