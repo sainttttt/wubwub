@@ -412,10 +412,10 @@ class SamplerLikeTrack(Track):
     def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, pitch_select='cycle',
                          length_select='cycle', volume_select='cycle', merge=False,
-                         attack=None, volume=None, attackRange=10, volumeRange=10):
+                         attack=None, volume=None, attackRange=10, volumeRange=10,
+                         vol_accent_freq=None, vol_accent_amount=4):
 
         freq = Fraction(freq).limit_denominator()
-
 
         pitches = self._convert_select_arg(pitches, pitch_select)
         lengths = self._convert_select_arg(lengths, length_select)
@@ -426,6 +426,7 @@ class SamplerLikeTrack(Track):
             end = self.get_beats() + 1
         d = {}
 
+        count = 0
         while b < end:
             pos = b.numerator / b.denominator
             attackVal = attack
@@ -440,8 +441,13 @@ class SamplerLikeTrack(Track):
             if volume != None:
                 volumeVal = volume + random.randint(-1 * volumeRange, volumeRange) / 10
 
+            if vol_accent_freq != None and not count % vol_accent_freq:
+                volumeVal += vol_accent_amount
+
+            print(f"{volumeVal=}")
             d[pos] = Note(next(pitches), next(lengths), volumeVal, attack=attackVal, skew=self._get_skew_amount())
             b += freq
+            count += 1
 
         self.add_fromdict(d, merge=merge)
 
@@ -545,7 +551,8 @@ class Sampler(SingleSampleTrack, SamplerLikeTrack):
 
             if isinstance(value, Note):
                 note = value
-                position += note.skew
+                if note.skew:
+                    position += note.skew
                 duration = note.length * b
                 if (position + duration) > next_position and not self.overlap:
                     duration = next_position - position
