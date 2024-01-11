@@ -22,17 +22,23 @@ __all__ = ['Note', 'Chord', 'ArpChord', 'arpeggiate', 'arpeggio_generator',
 from collections.abc import Iterable
 from fractions import Fraction
 from itertools import cycle, chain
+itertools.
 from sortedcontainers import SortedList
 
 from wubwub.errors import WubWubError
 from wubwub.pitch import named_chords, pitch_from_semitones, relative_pitch_to_int
 from wubwub.resources import random_choice_generator
+import random
 
 class Note(object):
     '''Class to represent an atomic MIDI-like note in wubwub.'''
     __slots__ = ('pitch', 'length', 'volume', 'attack', 'decay', 'skew')
 
-    def __init__(self, pitch=0, length=1, volume=0, attack=None, decay=None, skew=None):
+    def __init__(self, pitch=0, length=1,
+                 volume=0, volume_range=None,
+                 attack=None, attack_range=None,
+                 decay=None,
+                 skew=None, skew_range=None, skew_dir=None):
         '''
         Initialize the note.
 
@@ -56,10 +62,32 @@ class Note(object):
         '''
         object.__setattr__(self, "pitch", pitch)
         object.__setattr__(self, "length", length)
-        object.__setattr__(self, "volume", volume)
-        object.__setattr__(self, "attack", attack)
         object.__setattr__(self, "decay", decay)
-        object.__setattr__(self, "skew", skew)
+
+        skew_amount = 0
+        if skew:
+            if not skew_dir or skew_dir == "neg" :
+                skew_amount = random.randint(-1 * skew, 0)
+            elif skew_dir == "pos":
+                skew_amount = random.randint(0, skew)
+            elif skew_dir == "both":
+                skew_amount = random.randint(-1 * skew, skew)
+
+        attack_val = attack
+        volume_val = 1
+        if attack != None:
+            attack_min = attack - attack_range
+            if attack_min < 0:
+                attack_min = 0
+
+            attack_min = attack + random.randint(attack_min, attack + attack_range)
+
+        if volume != None:
+            volumeVal = volume + random.randint(-1 * volume_range, volume_range) / 10
+
+        object.__setattr__(self, "skew", skew_amount)
+        object.__setattr__(self, "volume", volume_val)
+        object.__setattr__(self, "attack", attack_val)
 
     def __setattr__(self, *args):
         '''Lock setting of attributes for Notes.'''

@@ -413,6 +413,7 @@ class SamplerLikeTrack(Track):
                          start=1, end=None, pitch_select='cycle',
                          length_select='cycle', volume_select='cycle', merge=False,
                          attack=None, volume=None, attackRange=10, volumeRange=10,
+                         skew=None, skew_dir=None,
                          vol_accent_freq=None, vol_accent_amount=4):
 
         freq = Fraction(freq).limit_denominator()
@@ -445,7 +446,9 @@ class SamplerLikeTrack(Track):
                 volumeVal += vol_accent_amount
 
             print(f"{volumeVal=}")
-            d[pos] = Note(next(pitches), next(lengths), volumeVal, attack=attackVal, skew=self._get_skew_amount())
+            d[pos] = Note(next(pitches), next(lengths),
+                          volumeVal, attack=attackVal,
+                          skew=skew, skew_dir=skew_dir)
             b += freq
             count += 1
 
@@ -551,7 +554,7 @@ class Sampler(SingleSampleTrack, SamplerLikeTrack):
 
             if isinstance(value, Note):
                 note = value
-                if note.skew:
+                if note.skew and beat != 1:
                     position += note.skew
                 duration = note.length * b
                 if (position + duration) > next_position and not self.overlap:
