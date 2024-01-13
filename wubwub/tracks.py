@@ -412,7 +412,7 @@ class SamplerLikeTrack(Track):
     def make_notes_every(self, freq, offset=0, pitches=0, lengths=1, volumes=0,
                          start=1, end=None, pitch_select='cycle',
                          length_select='cycle', volume_select='cycle', merge=False,
-                         attack=None, volume=None, attackRange=10, volumeRange=10,
+                         attack=None, volume=1, attack_range=10, volume_range=10,
                          skew=None, skew_dir=None,
                          vol_accent_freq=None, vol_accent_amount=4):
 
@@ -430,24 +430,14 @@ class SamplerLikeTrack(Track):
         count = 0
         while b < end:
             pos = b.numerator / b.denominator
-            attackVal = attack
-            volumeVal = 1
-            if attack != None:
-                attackMin = attack - attackRange
-                if attackMin < 0:
-                    attackMin = 0
-
-                attackVal = attack + random.randint(attackMin, attack + attackRange)
-
-            if volume != None:
-                volumeVal = volume + random.randint(-1 * volumeRange, volumeRange) / 10
+            volume_val = volume
 
             if vol_accent_freq != None and not count % vol_accent_freq:
-                volumeVal += vol_accent_amount
+                volume_val += vol_accent_amount
 
-            print(f"{volumeVal=}")
             d[pos] = Note(next(pitches), next(lengths),
-                          volumeVal, attack=attackVal,
+                          volume_val, volume_range=volume_range,
+                          attack=attack, attack_range=attack_range,
                           skew=skew, skew_dir=skew_dir)
             b += freq
             count += 1

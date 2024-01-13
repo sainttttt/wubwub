@@ -215,7 +215,6 @@ class Sequencer:
         """
         if name is None:
             name = unique_name('Track', self.tracknames())
-        print(f"{skew=}")
         new = Sampler(name=name, sample=sample, overlap=overlap,
                       basepitch=basepitch, sequencer=self, skew=skew, skew_dir=skew_dir)
         return new
@@ -554,7 +553,6 @@ class Sequencer:
         tracklength = self.beats * b + seq_oh
         audio = pydub.AudioSegment.silent(duration=tracklength)
         for track in self.tracks():
-            print(track.notedict)
             audio = audio.overlay(track.build(overhang, overhang_type))
         return self.postprocess(audio)
 
@@ -684,7 +682,6 @@ class Sequencer:
             selection = [self.get_track(i) for i in selection]
 
         for track in selection:
-            print(f'Playing sample(s) for "{track.name}"...')
             time.sleep(.25)
             track.soundtest(postprocess=postprocess)
             time.sleep(gap)

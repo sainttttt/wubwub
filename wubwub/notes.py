@@ -22,7 +22,6 @@ __all__ = ['Note', 'Chord', 'ArpChord', 'arpeggiate', 'arpeggio_generator',
 from collections.abc import Iterable
 from fractions import Fraction
 from itertools import cycle, chain
-itertools.
 from sortedcontainers import SortedList
 
 from wubwub.errors import WubWubError
@@ -74,7 +73,7 @@ class Note(object):
                 skew_amount = random.randint(-1 * skew, skew)
 
         attack_val = attack
-        volume_val = 1
+        volume_val = volume
         if attack != None:
             attack_min = attack - attack_range
             if attack_min < 0:
@@ -82,17 +81,17 @@ class Note(object):
 
             attack_min = attack + random.randint(attack_min, attack + attack_range)
 
-        if volume != None:
-            volumeVal = volume + random.randint(-1 * volume_range, volume_range) / 10
+        if volume_range != None:
+            volume_val = volume + random.randint(-1 * volume_range, volume_range) / 10
 
         object.__setattr__(self, "skew", skew_amount)
         object.__setattr__(self, "volume", volume_val)
         object.__setattr__(self, "attack", attack_val)
 
-    def __setattr__(self, *args):
-        '''Lock setting of attributes for Notes.'''
-        name = self.__class__.__name__
-        raise AttributeError(f"'{name}' object doesn't support item assignment")
+    # def __setattr__(self, *args):
+    #     '''Lock setting of attributes for Notes.'''
+    #     name = self.__class__.__name__
+    #     raise AttributeError(f"'{name}' object doesn't support item assignment")
 
     def __delattr__(self, *args):
         '''Lock deleting of attributes for Notes.'''
